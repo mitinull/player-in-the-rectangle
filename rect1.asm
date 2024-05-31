@@ -82,5 +82,5 @@ drawrect:
     pop ax
     pop es
     pop bp
-    ret 4
+    ret 8
     

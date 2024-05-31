@@ -1,22 +1,53 @@
 [org 0x0100]
 
-start:
-    call clrscr
-    
-    push word [top]
-    push word [left]
-    push word [bottom]
-    push word [right]
-    call drawrect
+call clrscr
+
+mov ax, 10  ; top
+push ax
+mov ax, 20  ; left
+push ax
+mov ax, 20  ; bottom
+push ax
+mov ax, 40  ; right
+push ax
+call drawrect
+
+mov ax, 15  ; y
+push ax
+mov ax, 30  ; x
+push ax
+call drawplayer
+
+xor ax, ax
+mov es, ax
+mov ax, [es:9*4]
+mov [oldisr], ax
+mov ax, [es:9*4+2]
+mov [oldisr+2], ax
+cli
+mov word [es:9*4], kbisr
+mov [es:9*4+2], cs
+sti
+
+l1:
+    mov ah, 0
+    int 0x16
+
+    cmp al, 27
+    jne l1
+
+    mov ax, [oldisr]
+    mov bx, [oldisr+2]
+    cli
+    mov [es:9*4], ax
+    mov [es:9*4+2], bx
+    sti
     
     mov ax, 0x4c00
     int 0x21
     
 
-top:        dw  5
-left:       dw  10
-bottom:     dw  15
-right:      dw  50
+oldisr:     dd  0
 
 
 clrscr:
@@ -38,6 +69,57 @@ clrscr:
     pop ax
     pop es
     ret
+    
+
+drawplayer:
+    push bp
+    mov bp, sp
+    push ax
+
+    mov ax, 10
+    imul ax, [bp+6]
+    add ax, 0xb800
+    mov es, ax
+    
+    mov di, [bp+4]
+    imul di, 2
+
+    mov byte [es:di], 'P'
+    
+    pop ax
+    pop bp
+    ret 4
+
+
+
+kbisr:
+    push ax
+    push es
+
+    mov ax, 0xb800
+    mov es, ax
+
+    in al, 0x60
+    cmp al, 0x2a
+    jne nextcmp
+    
+    mov byte [es:0], 'L'
+    jmp nomatch
+
+    nextcmp:
+        cmp al, 0x36
+        jne nomatch
+    
+    mov byte [es:0], 'R'
+        
+    nomatch:
+        ; mov al, 0x20
+        ; out 0x20, al
+        
+    pop es
+    pop ax
+    jmp far [cs:oldisr]
+    ; iret
 
 
 drawrect:
@@ -63,9 +145,9 @@ drawrect:
     mov ax, [bp+10]
     imul ax, 10
     add ax, 0xb800
-    add ax, 10
+    ; add ax, 10
     mov es, ax
-    
+
     xor bx, bx
     
     nextrow:

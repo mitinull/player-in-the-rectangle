@@ -1,22 +1,53 @@
 [org 0x0100]
 
-start:
-    call clrscr
-    
-    push word [top]
-    push word [left]
-    push word [bottom]
-    push word [right]
-    call drawrect
+call clrscr
+
+mov ax, 10  ; top
+push ax
+mov ax, 20  ; left
+push ax
+mov ax, 20  ; bottom
+push ax
+mov ax, 40  ; right
+push ax
+call drawrect
+
+mov al, 'P'
+push ax
+call drawchar
+
+xor ax, ax
+mov es, ax
+mov ax, [es:9*4]
+mov [oldisr], ax
+mov ax, [es:9*4+2]
+mov [oldisr+2], ax
+cli
+mov word [es:9*4], kbisr
+mov [es:9*4+2], cs
+sti
+
+l1:
+    mov ah, 0
+    int 0x16
+
+    cmp al, 27
+    jne l1
+
+    mov ax, [oldisr]
+    mov bx, [oldisr+2]
+    cli
+    mov [es:9*4], ax
+    mov [es:9*4+2], bx
+    sti
     
     mov ax, 0x4c00
     int 0x21
     
 
-top:        dw  5
-left:       dw  10
-bottom:     dw  15
-right:      dw  50
+oldisr:     dd  0
+playery:    dw  15
+playerx:    dw  30
 
 
 clrscr:
@@ -38,6 +69,84 @@ clrscr:
     pop ax
     pop es
     ret
+    
+
+drawchar:
+    push bp
+    mov bp, sp
+    push ax
+
+    mov ax, 10
+    imul ax, [playery]
+    add ax, 0xb800
+    mov es, ax
+    
+    mov di, [playerx]
+    imul di, 2
+
+    mov ax, [bp+4]
+    mov byte [es:di], al
+    
+    pop ax
+    pop bp
+    ret 2
+
+
+movleft:
+    dec word [playerx]
+    ret
+    
+
+movright:
+    inc word [playerx]
+    ret
+
+
+kbisr:
+    push ax
+    push es
+
+    mov ax, 0xb800
+    mov es, ax
+
+    in al, 0x60
+    cmp al, 0x4b
+    jne nextcmp
+    
+    mov al, ' '
+    push ax
+    call drawchar
+
+    call movleft
+    
+    mov al, 'P'
+    push ax
+    call drawchar
+
+    jmp nomatch
+
+    nextcmp:
+        cmp al, 0x4d
+        jne nomatch
+    
+    mov al, ' '
+    push ax
+    call drawchar
+
+    call movright
+    
+    mov al, 'P'
+    push ax
+    call drawchar
+        
+    nomatch:
+        ; mov al, 0x20
+        ; out 0x20, al
+        
+    pop es
+    pop ax
+    jmp far [cs:oldisr]
+    ; iret
 
 
 drawrect:
@@ -63,9 +172,9 @@ drawrect:
     mov ax, [bp+10]
     imul ax, 10
     add ax, 0xb800
-    add ax, 10
+    ; add ax, 10
     mov es, ax
-    
+
     xor bx, bx
     
     nextrow:
