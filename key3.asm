@@ -92,8 +92,16 @@ drawchar:
     ret 2
 
 
+movup:
+    dec word [playery]
+    ret
+
 movleft:
     dec word [playerx]
+    ret
+    
+movdown:
+    inc word [playery]
     ret
     
 
@@ -110,14 +118,14 @@ kbisr:
     mov es, ax
 
     in al, 0x60
-    cmp al, 0x4b
+    cmp al, 0x48
     jne nextcmp
     
     mov al, ' '
     push ax
     call drawchar
 
-    call movleft
+    call movup
     
     mov al, 'P'
     push ax
@@ -126,18 +134,51 @@ kbisr:
     jmp nomatch
 
     nextcmp:
+        cmp al, 0x4b
+        jne nextcmp2
+    
+        mov al, ' '
+        push ax
+        call drawchar
+
+        call movleft
+        
+        mov al, 'P'
+        push ax
+        call drawchar
+        
+        jmp nomatch
+    
+    nextcmp2:
+        cmp al, 0x50
+        jne nextcmp3
+    
+        mov al, ' '
+        push ax
+        call drawchar
+
+        call movdown
+        
+        mov al, 'P'
+        push ax
+        call drawchar
+        
+        jmp nomatch
+    
+    nextcmp3:
         cmp al, 0x4d
         jne nomatch
-    
-    mov al, ' '
-    push ax
-    call drawchar
+        
+        mov al, ' '
+        push ax
+        call drawchar
 
-    call movright
-    
-    mov al, 'P'
-    push ax
-    call drawchar
+        call movright
+        
+        mov al, 'P'
+        push ax
+        call drawchar
+
         
     nomatch:
         ; mov al, 0x20
