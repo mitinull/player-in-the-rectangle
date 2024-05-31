@@ -2,14 +2,10 @@
 
 call clrscr
 
-mov ax, 10  ; top
-push ax
-mov ax, 20  ; left
-push ax
-mov ax, 20  ; bottom
-push ax
-mov ax, 40  ; right
-push ax
+push word [top]
+push word [left]
+push word [bottom]
+push word [right]
 call drawrect
 
 mov al, 'P'
@@ -44,7 +40,10 @@ l1:
     mov ax, 0x4c00
     int 0x21
     
-
+top:        dw  10
+left:       dw  20
+bottom:     dw  20
+right:      dw  40
 oldisr:     dd  0
 playery:    dw  15
 playerx:    dw  30
@@ -91,24 +90,41 @@ drawchar:
     pop bp
     ret 2
 
-
 movup:
+    mov ax, [playery]
+    dec ax
+    cmp ax, [top]
+    je return
     dec word [playery]
-    ret
+    return:
+        ret
 
 movleft:
+    mov ax, [playerx]
+    dec ax
+    cmp ax, [left]
+    je return
     dec word [playerx]
-    ret
+    return:
+        ret
     
 movdown:
+    mov ax, [playery]
+    inc ax
+    cmp ax, [bottom]
+    je return
     inc word [playery]
-    ret
-    
+    return:
+        ret
 
 movright:
+    mov ax, [playerx]
+    inc ax
+    cmp ax, [right]
+    je return
     inc word [playerx]
-    ret
-
+    return:
+        ret
 
 kbisr:
     push ax
@@ -203,11 +219,13 @@ drawrect:
     ; height
     mov ax, [bp+6]
     sub ax, [bp+10]
+    inc ax
     mov [bp-4], ax
     
     ; width
     mov ax, [bp+4]
     sub ax, [bp+8]
+    inc ax
     mov [bp-2], ax
     
     mov ax, [bp+10]
