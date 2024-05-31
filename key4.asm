@@ -91,21 +91,37 @@ drawchar:
     ret 2
 
 movup:
+    mov ax, [playery]
+    dec ax
+    cmp ax, [top]
+    je returnup
     dec word [playery]
     returnup:
         ret
 
 movleft:
+    mov ax, [playerx]
+    dec ax
+    cmp ax, [left]
+    je returnleft
     dec word [playerx]
     returnleft:
         ret
     
 movdown:
+    mov ax, [playery]
+    inc ax
+    cmp ax, [bottom]
+    je returndown
     inc word [playery]
     returndown:
         ret
 
 movright:
+    mov ax, [playerx]
+    inc ax
+    cmp ax, [right]
+    je returnright
     inc word [playerx]
     returnright:
         ret
