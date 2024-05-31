@@ -90,10 +90,14 @@ drawchar:
     pop bp
     ret 2
 
-
 movup:
+    mov ax, [playery]
+    dec ax
+    cmp ax, [top]
+    je return
     dec word [playery]
-    ret
+    return:
+        ret
 
 movleft:
     mov ax, [playerx]
@@ -105,9 +109,13 @@ movleft:
         ret
     
 movdown:
+    mov ax, [playery]
+    inc ax
+    cmp ax, [bottom]
+    je return
     inc word [playery]
-    ret
-    
+    return:
+        ret
 
 movright:
     mov ax, [playerx]
@@ -115,24 +123,6 @@ movright:
     cmp ax, [right]
     je return
     inc word [playerx]
-    return:
-        ret
-
-movup:
-    mov ax, [playery]
-    dec ax
-    cmp ax, [top]
-    je return
-    dec word [playery]
-    return:
-        ret
-    
-movdown:
-    mov ax, [playery]
-    inc ax
-    cmp ax, [bottom]
-    je return
-    inc word [playery]
     return:
         ret
 
@@ -229,11 +219,13 @@ drawrect:
     ; height
     mov ax, [bp+6]
     sub ax, [bp+10]
+    inc ax
     mov [bp-4], ax
     
     ; width
     mov ax, [bp+4]
     sub ax, [bp+8]
+    inc ax
     mov [bp-2], ax
     
     mov ax, [bp+10]

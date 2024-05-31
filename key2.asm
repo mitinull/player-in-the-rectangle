@@ -135,11 +135,13 @@ drawrect:
     ; height
     mov ax, [bp+6]
     sub ax, [bp+10]
+    inc ax
     mov [bp-4], ax
     
     ; width
     mov ax, [bp+4]
     sub ax, [bp+8]
+    inc ax
     mov [bp-2], ax
     
     mov ax, [bp+10]
